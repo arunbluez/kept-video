@@ -1,28 +1,8 @@
 import path from "node:path";
 import { Config } from "@remotion/cli/config";
+import { webpackOverride } from "./webpack-override";
 
-/**
- * The film imports the product's own code rather than copies of it: the mascot
- * generator, the publish response schema and the slug rules come straight from
- * the pinned `kept/` submodule. Exact-match aliases (`$`) so `@kept/shared`
- * does not swallow `@kept/shared/mascot`. Mirrors `paths` in tsconfig.json.
- */
-const kept = (p: string) => path.resolve(process.cwd(), "kept", p);
-
-Config.overrideWebpackConfig((config) => ({
-  ...config,
-  resolve: {
-    ...config.resolve,
-    alias: {
-      ...(config.resolve?.alias ?? {}),
-      "@kept/shared$": kept("packages/shared/src/index.ts"),
-      "@kept/shared/mascot$": kept("packages/shared/src/mascot/index.ts"),
-      "@kept/slug$": kept("apps/web/lib/publish/slug.ts"),
-      // `geist` exports only its next/font entry; reach its woff2 files directly.
-      "geist-fonts": path.resolve(process.cwd(), "node_modules/geist/dist/fonts"),
-    },
-  },
-}));
+Config.overrideWebpackConfig(webpackOverride);
 
 Config.setVideoImageFormat("jpeg");
 Config.setJpegQuality(95);

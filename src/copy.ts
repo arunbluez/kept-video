@@ -71,9 +71,11 @@ export const SUPERS = {
     mono: "GAMES · TOOLS · SCENES · DASHBOARDS",
   },
   // Act 1 — STUCK
-  screenshots: { at: 13.5, exit: 19.5, lines: [["Screenshots"], ["don't", "move."]] },
-  localFiles: { at: 15.5, exit: 19.5, lines: [["Local", "files"], ["don't", "travel."]] },
-  pasted: { at: 17.5, exit: 19.5, lines: [["Pasted", "code"], ["isn't", "a", "launch."]] },
+  // One beat earlier than the brief (13.5/15.5/17.5): at the brief's times the
+  // third super gets 2.0 s of its 2.45 s minimum and collides with 0:19.5.
+  screenshots: { at: 13.0, exit: 19.0, lines: [["Screenshots"], ["don't", "move."]] },
+  localFiles: { at: 15.0, exit: 19.0, lines: [["Local", "files"], ["don't", "travel."]] },
+  pasted: { at: 17.0, exit: 19.0, lines: [["Pasted", "code"], ["isn't", "a", "launch."]] },
   deserves: { at: 19.5, exit: 22.0, lines: [["Your", "work"], ["deserves"], ["a", a("link.")]] },
   // Act 2 — DROP
   seconds: { at: 28.0, exit: 30.75, lines: [["Live", "in", "seconds."]] },

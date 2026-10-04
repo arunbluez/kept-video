@@ -31,7 +31,10 @@ const A1 = centre(REGION.a1);
 /** Act 2: the browser frame the link pill opens into (region-local centre). */
 export const A2_FRAME = { cx: 960, cy: 540, w: 1600, h: 972 };
 const a2Frame = { x: REGION.a1.x + A2_FRAME.cx, y: REGION.a1.y + A2_FRAME.cy };
-const A2_SIDE = frameAt(a2Frame.x, a2Frame.y, 1310, 560, 0.64);
+/** The frame sits right, canvas on the left for the super. */
+const A2_SIDE = frameAt(a2Frame.x, a2Frame.y, 1330, 560, 0.7);
+/** The rename: the address bar large enough to read, page running off right. */
+const A2_RENAME = frameAt(REGION.a1.x + 160, REGION.a1.y + 54, 760, 250, 0.92);
 
 /**
  * Every camera move in the film. Keys arrive with the easing given (default
@@ -48,5 +51,7 @@ export const CAMERA_KEYS: CamKey[] = [
   { f: at(31.0) + ms(700), x: a2Frame.x, y: a2Frame.y, s: 1.08, ease: C },
   { f: at(33.0), x: a2Frame.x, y: a2Frame.y, s: 1.08 },
   { f: at(33.0) + ms(1400), ...A2_SIDE, ease: C },
-  { f: at(43.5), ...A2_SIDE },
+  { f: at(40.0), ...A2_SIDE },
+  { f: at(40.0) + ms(700), ...A2_RENAME, ease: C },
+  { f: at(43.5), ...A2_RENAME },
 ];

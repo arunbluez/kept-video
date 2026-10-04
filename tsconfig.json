@@ -18,8 +18,9 @@
     "paths": {
       "@kept/shared": ["./kept/packages/shared/src/index.ts"],
       "@kept/shared/mascot": ["./kept/packages/shared/src/mascot/index.ts"],
-      "@kept/slug": ["./kept/apps/web/lib/publish/slug.ts"]
+      "@kept/slug": ["./kept/apps/web/lib/publish/slug.ts"],
+      "@/*": ["./kept/apps/web/*"]
     }
   },
-  "include": ["src", "scripts", "remotion.config.ts"]
+  "include": ["src", "scripts", "remotion.config.ts", "webpack-override.ts"]
 }
