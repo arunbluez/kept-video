@@ -19,5 +19,6 @@ const { stderr } = spawnSync("ffmpeg", ["-hide_banner", "-i", input, "-af", `lou
 const m = JSON.parse(stderr.slice(stderr.lastIndexOf("{"), stderr.lastIndexOf("}") + 1)) as Record<string, string>;
 // pass 2: apply, linear, with the measurements
 const second = `loudnorm=${TARGET}:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
-execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-c:v", "copy", "-af", second, "-ar", "48000", "-c:a", "aac", "-b:a", "320k", "-movflags", "+faststart", output]);
+// -shortest: AAC adds ~0.1 s of padding; the audio ends with the picture
+execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", input, "-c:v", "copy", "-af", second, "-ar", "48000", "-c:a", "aac", "-b:a", "320k", "-shortest", "-movflags", "+faststart", output]);
 console.log(`mastered → ${output} (measured ${m.input_i} LUFS → −14 LUFS)`);

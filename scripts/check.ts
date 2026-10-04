@@ -137,15 +137,20 @@ function checkRender(label: string, file: string, seconds: number) {
     return;
   }
   const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", file], { encoding: "utf8" })) as {
-    streams: { codec_type: string; codec_name: string; width?: number; height?: number; r_frame_rate?: string; sample_rate?: string; pix_fmt?: string }[];
+    streams: { codec_type: string; codec_name: string; width?: number; height?: number; r_frame_rate?: string; sample_rate?: string; pix_fmt?: string; nb_frames?: string; duration?: string }[];
     format: { duration: string; size: string };
   };
   const v = probe.streams.find((x) => x.codec_type === "video");
   const a = probe.streams.find((x) => x.codec_type === "audio");
   check(`${label}: H.264 1920×1080 yuv420p`, v?.codec_name === "h264" && v.width === 1920 && v.height === 1080 && v.pix_fmt === "yuv420p", `${v?.codec_name} ${v?.width}×${v?.height} ${v?.pix_fmt}`);
   check(`${label}: 60 fps`, v?.r_frame_rate === "60/1", v?.r_frame_rate ?? "");
-  const dur = Number(probe.format.duration);
-  check(`${label}: ${seconds} s`, Math.abs(dur - seconds) < 0.1, `${dur.toFixed(3)} s, ${(Number(probe.format.size) / 1e6).toFixed(1)} MB`);
+  const frames = Number(v?.nb_frames);
+  const audioDur = Number(a?.duration);
+  check(
+    `${label}: ${seconds} s`,
+    frames === seconds * FPS && Math.abs(audioDur - seconds) < 0.05,
+    `${frames} frames, audio ${audioDur.toFixed(3)} s, ${(Number(probe.format.size) / 1e6).toFixed(1)} MB`,
+  );
   check(`${label}: AAC 48 kHz audio`, a?.codec_name === "aac" && a.sample_rate === "48000", `${a?.codec_name} ${a?.sample_rate}`);
   const { stderr } = spawnSync("ffmpeg", ["-hide_banner", "-i", file, "-af", "ebur128=peak=true", "-f", "null", "-"], { encoding: "utf8" });
   const summary = stderr.slice(stderr.lastIndexOf("Summary"));
