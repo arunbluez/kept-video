@@ -25,6 +25,3 @@ export const REGION = {
 } as const;
 
 export type Region = (typeof REGION)[keyof typeof REGION];
-
-/** World coordinates of a point given in a region's local coordinates. */
-export const inRegion = (r: Region, x: number, y: number) => ({ x: r.x + x, y: r.y + y });

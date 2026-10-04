@@ -15,23 +15,6 @@ export const prog = (
   ease: Ease = EASE.out,
 ): number => (dur <= 0 ? (frame >= start ? 1 : 0) : ease(clamp((frame - start) / dur)));
 
-/** 1 inside [from, to), easing in over `fadeIn` and out over `fadeOut` frames. */
-export const window01 = (
-  frame: number,
-  from: number,
-  to: number,
-  fadeIn: number,
-  fadeOut: number,
-  ease: Ease = EASE.out,
-): number => prog(frame, from, fadeIn, ease) * (1 - prog(frame, to - fadeOut, fadeOut, ease));
-
-export interface Key {
-  f: number;
-  /** Easing used to arrive AT this key from the previous one. */
-  ease?: Ease;
-  [k: string]: number | Ease | undefined;
-}
-
 /**
  * Piecewise keyframe interpolation. Holds the first value before the first key
  * and the last after the last. Each segment uses the easing of the key it

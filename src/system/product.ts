@@ -2,7 +2,7 @@
  * Product facts the film shows, read from the product itself (the pinned
  * `kept/` submodule) so a constant changing there changes the film.
  */
-export { DRAFT_GRACE_DAYS, DRAFT_TTL_DAYS, KEPT_PAGE_LIMIT, publishResponseSchema } from "@kept/shared";
+export { DRAFT_GRACE_DAYS, DRAFT_TTL_DAYS, KEPT_PAGE_LIMIT } from "@kept/shared";
 import { draftCountdown, type DraftPhase } from "@/components/kept/draft-chip";
 import { DRAFT_TTL_DAYS } from "@kept/shared";
 

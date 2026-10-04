@@ -110,10 +110,6 @@ export interface SuperProps {
 const WORD_STAGGER = ms(60);
 const WORD_RISE = ms(400);
 
-/** Frame the accent underline of a super finishes drawing. */
-export const underlineDoneAt = (from: number, wordIndex: number) =>
-  from + wordIndex * WORD_STAGGER + WORD_RISE + ms(200) + ms(700);
-
 /**
  * A super (on-screen headline). Words rise 0.6em from behind a clip at their
  * baseline, 400 ms ease-out, 60 ms stagger (T2), and leave behind a hairline

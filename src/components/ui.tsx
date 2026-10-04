@@ -7,37 +7,6 @@ import { ms } from "../system/timeline";
 import { FONT, HAIRLINE, MONO_TRACKING, RF, TYPE } from "../system/tokens";
 import { PAGES, PageView, type PageId } from "../pages";
 
-/* ───────────────────────────── surfaces ───────────────────────────── */
-
-export const Surface: React.FC<{
-  w?: number;
-  h?: number;
-  radius?: number;
-  shadow?: "sm" | "md" | "lg";
-  sunken?: boolean;
-  style?: React.CSSProperties;
-  children?: React.ReactNode;
-}> = ({ w, h, radius = RF.lg, shadow = "sm", sunken, style, children }) => {
-  const { c, shadow: sh } = useTheme();
-  return (
-    <div
-      style={{
-        width: w,
-        height: h,
-        borderRadius: radius,
-        background: sunken ? c.surfaceSunken : c.surface,
-        border: `${HAIRLINE}px solid ${c.border}`,
-        boxShadow: sh(shadow, 1.6),
-        boxSizing: "border-box",
-        position: "relative",
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-};
-
 /* ─────────────────────────────── text ─────────────────────────────── */
 
 const GLYPHS = "abcdefghjkmnpqrstvwxyz0123456789<>/{}=;:.#";
@@ -74,9 +43,6 @@ export function scramble(
   }
   return out;
 }
-
-/** Frame a scramble of `len` characters has fully landed. */
-export const scrambleDoneAt = (start: number, len: number) => start + (len - 1) * ms(25) + ms(120);
 
 export const Caret: React.FC<{ frame: number; color: string; h: number; on?: boolean }> = ({
   frame,

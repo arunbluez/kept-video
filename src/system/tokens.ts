@@ -70,20 +70,10 @@ export type ShadowName = keyof typeof SHADOW.light;
 
 /** Radii. Mock screens drawn at film scale use `RF` (×1.5, brief §4.4). */
 export const R = { sm: 8, md: 12, lg: 16, xl: 24, pill: 999 } as const;
-export const RF = { sm: 12, md: 18, lg: 24, xl: 36, pill: 999 } as const;
+export const RF = { sm: R.sm * 1.5, md: R.md * 1.5, lg: R.lg * 1.5, xl: R.xl * 1.5, pill: R.pill } as const;
 
 /** Film hairline: a 1px UI hairline at the ~1.75× film scale. */
 export const HAIRLINE = 2;
-
-/** Motion durations in ms (brief §4.5). */
-export const DUR = {
-  instant: 80,
-  fast: 160,
-  base: 240,
-  slow: 400,
-  deliberate: 700,
-  ambient: 6000,
-} as const;
 
 /**
  * Easings. `out` and `spring` are the product's `--ease-out` / `--ease-spring`.

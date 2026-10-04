@@ -40,12 +40,6 @@ const CamCtx = createContext<Cam>({ x: 960, y: 540, s: 1, r: 0 });
 
 export const useCam = (): Cam => useContext(CamCtx);
 
-/** Map a world point to a screen point under a camera. */
-export const toScreen = (cam: Cam, wx: number, wy: number) => ({
-  x: (wx - cam.x) * cam.s + 960,
-  y: (wy - cam.y) * cam.s + 540,
-});
-
 /**
  * The world plane. Reads the frame itself (not from a parent) so that inside
  * `CameraMotionBlur`, which renders its children at sub-frame offsets, the

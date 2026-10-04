@@ -1,4 +1,4 @@
-import { DOWNBEAT_OFFSET, FPS, FRAMES_PER_BEAT } from "./timeline";
+import { DOWNBEAT_OFFSET, FRAMES_PER_BEAT } from "./timeline";
 
 /**
  * The pocket synth's pattern. ONE definition, read by the page the film shows
@@ -31,6 +31,3 @@ export const sixteenthPhase = (frame: number): number => {
   const pos = ((frame - DOWNBEAT_OFFSET) / FRAMES_PER_BEAT) * 4;
   return pos - Math.floor(pos);
 };
-
-/** Seconds of film time at a frame. */
-export const secondsAt = (frame: number): number => frame / FPS;
