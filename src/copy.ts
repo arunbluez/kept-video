@@ -108,7 +108,7 @@ export const SUPERS = {
   explore: { at: 79.0, exit: 81.0, lines: [["Explore"], ["by", "model."]] },
   ready: { at: 81.5, exit: 84.5, lines: [["Ready"], ["to", "post."]], mono: "SHARE KIT · PRO" },
   // Act 5 — WALL (reconstructed)
-  wall: { at: 91.5, exit: 96.0, lines: [["Make", "a", "wall"], ["of", "your", "work."]] },
+  wall: { at: 91.5, exit: 94.0, lines: [["Make", "a", "wall"], ["of", "your", "work."]] },
   oneLink: { at: 101.5, exit: 106.5, lines: [["One", "link"], ["for", "everything."]], mono: WALL_HOST.toUpperCase() },
   // Act 6 — OPEN (reconstructed)
   week: {

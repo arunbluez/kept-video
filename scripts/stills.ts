@@ -17,7 +17,8 @@ import { actFrom, actTo, at, FPS } from "../src/system/timeline";
 import { webpackOverride } from "../webpack-override";
 
 const args = process.argv.slice(2);
-const outDir = path.resolve("out/stills");
+// Each run writes to its own folder, so old stills never mix into a new tile.
+const outDir = path.resolve("out/stills", new Date().toISOString().replace(/[:.]/g, "-"));
 fs.mkdirSync(outDir, { recursive: true });
 
 let times: number[] = [];
@@ -52,6 +53,23 @@ for (const t of times) {
   console.log(`${t.toFixed(2)}s → ${path.relative(process.cwd(), file)}`);
 }
 await browser.close({ silent: true });
+
+if (!sheet && files.length > 1) tile(files, Math.min(4, files.length), path.resolve("out/tile.png"));
+
+/** Lay stills out in a grid with xstack (explicit layout, every input placed). */
+function tile(inputs: string[], cols: number, out: string) {
+  const w = 960;
+  const h = 540;
+  const pad = 6;
+  const layout = inputs.map((_, i) => `${(i % cols) * (w + pad)}_${Math.floor(i / cols) * (h + pad)}`).join("|");
+  execFileSync("ffmpeg", [
+    "-y", "-loglevel", "error",
+    ...inputs.flatMap((f) => ["-i", f]),
+    "-filter_complex", `${inputs.map((_, i) => `[${i}:v]scale=${w}:${h}[v${i}]`).join(";")};${inputs.map((_, i) => `[v${i}]`).join("")}xstack=inputs=${inputs.length}:layout=${layout}:fill=0x888888`,
+    "-frames:v", "1", out,
+  ]);
+  console.log(`review tile → ${path.relative(process.cwd(), out)}`);
+}
 
 if (sheet) {
   // 75 bars → a 5×15 grid, chapter by chapter.

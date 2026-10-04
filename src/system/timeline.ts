@@ -63,12 +63,14 @@ export const DURATION_IN_FRAMES = actTo(7);
 
 /**
  * The three camera whips (T4) — the only motion-blurred moments in the film.
- * Each lasts one beat and lands on the next act's downbeat.
+ * Each lands on the next act's downbeat. The second starts as the share kit
+ * zips into its stack, so it takes two beats; the others take one.
  */
-export const WHIPS = [at(43.5), at(85.0), at(107.5)].map((from) => ({
-  from,
-  to: from + beats(1),
-}));
+export const WHIPS = [
+  { from: at(43.5), to: at(44.0) },
+  { from: at(85.0), to: at(86.0) },
+  { from: at(107.5), to: at(108.0) },
+];
 
 /** Light → dark → light (T5), Act 6 only, each swap ≥ 3 s (brief §4.2). */
 export const THEME_SWAPS = [
