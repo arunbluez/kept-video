@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "@kept/shared": ["./kept/packages/shared/src/index.ts"],
+      "@kept/shared/mascot": ["./kept/packages/shared/src/mascot/index.ts"],
+      "@kept/slug": ["./kept/apps/web/lib/publish/slug.ts"]
+    }
+  },
+  "include": ["src", "scripts", "remotion.config.ts"]
+}
