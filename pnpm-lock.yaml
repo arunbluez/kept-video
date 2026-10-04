@@ -20,6 +20,9 @@ importers:
       '@remotion/fonts':
         specifier: 4.0.532
         version: 4.0.532(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@remotion/layout-utils':
+        specifier: 4.0.532
+        version: 4.0.532
       '@remotion/motion-blur':
         specifier: 4.0.532
         version: 4.0.532(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -714,6 +717,9 @@ packages:
 
   '@remotion/fonts@4.0.532':
     resolution: {integrity: sha512-9uvvMNTfxcdM0Tyx0aIIfsabWUCWq7XmJsZx7CtIaJkuLx+VBJEQC3CU1MD81cSZLNJlxyGS2Bco6jxvQJUUNw==}
+
+  '@remotion/layout-utils@4.0.532':
+    resolution: {integrity: sha512-J6+OP/LSnWPWn50TbSLSdM64hWluZAyIO5eZVBYHe5JzjjKVo1KFscCBDsw9DieuOFggwoyJ5LC4qP18TvQzzQ==}
 
   '@remotion/licensing@4.0.532':
     resolution: {integrity: sha512-rVFt+XpEn4X5aOiy1DDCjJeUKgGey1ftYK812W8iEBZkcl6hlb1eq9SyQTIX0JlTtMzdJrev6+jLSnLCOj69OQ==}
@@ -2693,6 +2699,8 @@ snapshots:
     transitivePeerDependencies:
       - react
       - react-dom
+
+  '@remotion/layout-utils@4.0.532': {}
 
   '@remotion/licensing@4.0.532': {}
 

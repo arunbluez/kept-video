@@ -18,6 +18,8 @@ import { filmSlug } from "./system/slug";
 export const ORRERY_SLUG = filmSlug(2026);
 /** The agent's publish — also anonymous, so also a random slug. */
 export const SYNTH_SLUG = filmSlug(44);
+/** The three ways in (0:57–1:00) each mint their own link; the middle one is the synth. */
+export const WAY_SLUGS = [filmSlug(57), SYNTH_SLUG, filmSlug(59)] as const;
 /** The draft nobody kept (Act 6). */
 export const LAPSED_SLUG = filmSlug(108);
 /** The rename (0:40.5). Readable names are a free-tier feature. */
@@ -97,7 +99,7 @@ export const SUPERS = {
     mono: "KEYLESS AGENT PUBLISHING · FREE FOREVER",
     monoAt: 56.0,
   },
-  howeverMade: { at: 60.0, exit: 62.0, lines: [["However", "it's", "made."]] },
+  howeverMade: { at: 60.0, exit: 61.5, lines: [["However", "it's", "made."]] },
   // Act 4 — SHARE
   showHow: { at: 68.0, exit: 70.5, lines: [["Show", "how"], ["it", "was", "made."]] },
   sharePrompt: { at: 71.0, exit: 74.5, lines: [["Share", "the", "prompt"], ["—", "if", "you", "want."]] },
