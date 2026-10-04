@@ -1,14 +1,16 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
 import { Check } from "lucide-react";
-import { HOST, PROMPTS, SYNTH_SLUG, WAY_SLUGS } from "../copy";
+import { HOST, JSON_TEXT, SYNTH_SLUG, WAY_SLUGS } from "../copy";
+import { TYPING } from "../system/cues";
 import { Cursor } from "../components/Cursor";
 import { BrowserFrame } from "../components/Frame";
 import { SuperAt } from "../components/SuperAt";
 import { Mono } from "../components/Type";
-import { Button, Chip, DraftChip, FileCard, Host, LiveDot, typed } from "../components/ui";
+import { Button, Chip, DraftChip, FileCard, Host, LiveDot } from "../components/ui";
+import { typed } from "../system/typing";
 import { PageView } from "../pages";
-import type { PublishResponse } from "@kept/shared";
+import { RHINE_SOURCE_HEAD } from "../pages/Rhine";
 import { arc, clamp, lerp, prog, track } from "../system/anim";
 import { DRAFT_TTL_DAYS, KEPT_PAGE_LIMIT } from "../system/product";
 import { useTheme } from "../system/theme";
@@ -25,19 +27,6 @@ import { measureText } from "@remotion/layout-utils";
 
 const PANEL = { x: 860, y: 140, w: 960, h: 800 };
 const PAD = 40;
-
-/**
- * The publish response, shown exactly as the API returns it — field names
- * checked against the product's `publishResponseSchema` at compile time.
- * The claim token is masked; it is a bearer credential.
- */
-const RESPONSE: Pick<PublishResponse, "live_url" | "claim_url" | "expires_in"> = {
-  live_url: `https://${SYNTH_SLUG}.${HOST}`,
-  claim_url: `https://app.${HOST}/keep/••••••••`,
-  expires_in: `${DRAFT_TTL_DAYS}d`,
-};
-const JSON_LINES: [string, string][] = Object.entries(RESPONSE).map(([k, v]) => [k, v]);
-const JSON_TEXT = ["{", ...JSON_LINES.map(([k, v], i) => `  "${k}": "${v}"${i < JSON_LINES.length - 1 ? "," : ""}`), "}"].join("\n");
 
 const T = {
   panel: at(44.0),
@@ -90,10 +79,10 @@ const ChatPanel: React.FC<{ frame: number }> = ({ frame }) => {
   const land = prog(frame, T.panel, ms(400), EASE.out);
   const leave = prog(frame, T.lift, ms(300), EASE.camera);
   if (land <= 0 || leave >= 1) return null;
-  const user = typed(frame, T.user, T.user + ms(1100), PROMPTS.agent);
+  const user = typed(frame, TYPING.agentPrompt.from, TYPING.agentPrompt.to, TYPING.agentPrompt.text);
   const progress = prog(frame, T.writing, ms(900), EASE.linear);
   const tool = prog(frame, T.tool, ms(400), EASE.out);
-  const json = typed(frame, T.json, T.json + ms(1800), JSON_TEXT, "json");
+  const json = typed(frame, TYPING.json.from, TYPING.json.to, JSON_TEXT, TYPING.json.seed);
   const words1 = MESSAGE_1.split(" ");
   const msgP = clamp((frame - T.message) / ms(900));
   const wordsShown = Math.floor(msgP * (words1.length + 6));
@@ -514,7 +503,7 @@ const WayPaste: React.FC<{ frame: number }> = ({ frame }) => {
     >
       {pasted ? (
         <pre style={{ margin: 0, fontFamily: FONT.mono, fontSize: 12, lineHeight: "17px", color: c.textSecondary }}>
-          {"<!doctype html>\n<html><head><title>rhine</title>\n<style>body{background:#e8f3f1}\n.chart{stroke:#1a9e8f}</style>\n</head><body><h1>Is the Rhine\nhigh today?</h1><svg class=chart>…"}
+          {RHINE_SOURCE_HEAD}
         </pre>
       ) : (
         <span style={{ fontFamily: FONT.body, fontSize: 22, color: c.textMuted }}>Paste HTML anywhere</span>
@@ -530,7 +519,7 @@ const WayPaste: React.FC<{ frame: number }> = ({ frame }) => {
 
 const WayAgent: React.FC<{ frame: number }> = ({ frame }) => {
   const { c } = useTheme();
-  const ask = typed(frame, at(57.5), at(58.25), "put this online");
+  const ask = typed(frame, TYPING.wayAgent.from, TYPING.wayAgent.to, TYPING.wayAgent.text);
   const done = frame >= at(58.75);
   return (
     <div

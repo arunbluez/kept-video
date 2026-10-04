@@ -7,7 +7,9 @@ import { BAR_H, PageBadge } from "../components/Frame";
 import { Opening } from "../components/Opening";
 import { SuperAt } from "../components/SuperAt";
 import { Mono } from "../components/Type";
-import { Button, LiveDot, scramble, typed } from "../components/ui";
+import { Button, LiveDot, scramble } from "../components/ui";
+import { typed } from "../system/typing";
+import { TYPING } from "../system/cues";
 import { PAGE_H } from "../pages/types";
 import { PageView } from "../pages";
 import { ORRERY_SOURCE } from "../pages/Orrery";
@@ -310,7 +312,7 @@ const SignInCrop: React.FC<{ frame: number }> = ({ frame }) => {
   const close = prog(frame, T.signInClick + ms(160), ms(240), EASE.out);
   if (open <= 0 || close >= 1) return null;
   const press = frame >= T.signInClick - ms(80) && frame < T.signInClick + ms(80) ? 1 : 0;
-  const email = typed(frame, T.badgeClick + ms(200), T.signInClick - ms(120), "mira@example.com");
+  const email = typed(frame, TYPING.email.from, TYPING.email.to, TYPING.email.text);
   return (
     <div
       style={{

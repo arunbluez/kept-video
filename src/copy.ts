@@ -1,4 +1,5 @@
 import { DRAFT_GRACE_DAYS, DRAFT_TTL_DAYS } from "@kept/shared";
+import type { PublishResponse } from "@kept/shared";
 import type { Word } from "./components/Type";
 import { filmSlug } from "./system/slug";
 
@@ -47,6 +48,25 @@ export const PROMPTS = {
   platformer: "a platformer with one button",
   agent: "Make me a pocket synth and put it online.",
 } as const;
+
+/* ─────────────────────────── the agent's publish ─────────────────────────── */
+
+/**
+ * The publish response, shown exactly as the API returns it — field names
+ * checked against the product's `publishResponseSchema` at compile time.
+ * The claim token is masked; it is a bearer credential.
+ */
+export const RESPONSE: Pick<PublishResponse, "live_url" | "claim_url" | "expires_in"> = {
+  live_url: `https://${SYNTH_SLUG}.${HOST}`,
+  claim_url: `https://app.${HOST}/keep/••••••••`,
+  expires_in: `${DRAFT_TTL_DAYS}d`,
+};
+const JSON_LINES = Object.entries(RESPONSE);
+export const JSON_TEXT = [
+  "{",
+  ...JSON_LINES.map(([k, v], i) => `  "${k}": "${v}"${i < JSON_LINES.length - 1 ? "," : ""}`),
+  "}",
+].join("\n");
 
 /* ───────────────────────────── supers ───────────────────────────── */
 

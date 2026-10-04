@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Audio, getStaticFiles, staticFile, useCurrentFrame } from "remotion";
 import { CameraMotionBlur } from "@remotion/motion-blur";
 import { SCENES } from "./acts";
 import { Grid } from "./components/Grid";
@@ -28,6 +28,23 @@ const WorldPlane: React.FC = () => {
   );
 };
 
+/**
+ * The licensed track, when it has been dropped in; otherwise the synthesised
+ * temp bed (scripts/audio.ts), which must not be published.
+ */
+export const MUSIC_FILE = "audio/music.wav";
+const TEMP_BED = "audio/temp-bed.wav";
+
+const Sound: React.FC = () => {
+  const hasMusic = getStaticFiles().some((f) => f.name === MUSIC_FILE);
+  return (
+    <>
+      <Audio src={staticFile(hasMusic ? MUSIC_FILE : TEMP_BED)} volume={0.8} />
+      <Audio src={staticFile("audio/sfx.wav")} volume={0.9} />
+    </>
+  );
+};
+
 export const Film: React.FC = () => {
   const frame = useCurrentFrame();
   const mix = themeMix(frame);
@@ -52,6 +69,7 @@ export const Film: React.FC = () => {
           })}
         </CameraProvider>
         <Hud />
+        <Sound />
       </AbsoluteFill>
     </ThemeProvider>
   );

@@ -110,3 +110,11 @@ export const Rhine: React.FC<PageProps> = ({ f }) => {
     </div>
   );
 };
+
+/** The top of the page's source, as it is pasted in Act 3 (0:58). */
+export const RHINE_SOURCE_HEAD = `<!doctype html>
+<html><head><title>rhine</title>
+<style>body{background:${P.bg.toLowerCase()}}
+.chart{stroke:${P.line.toLowerCase()}}</style>
+</head><body><h1>Is the Rhine
+high today?</h1><svg class=chart>…`;

@@ -10,6 +10,8 @@ Config.setConcurrency(4);
 Config.setCodec("h264");
 Config.setCrf(16);
 Config.setPixelFormat("yuv420p");
+Config.setAudioCodec("aac");
+Config.setAudioBitrate("320k");
 Config.setChromiumOpenGlRenderer("angle");
 
 // The environment's pre-installed chrome-headless-shell; the renderer must not

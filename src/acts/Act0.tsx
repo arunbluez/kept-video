@@ -2,8 +2,10 @@ import React from "react";
 import { useCurrentFrame } from "remotion";
 import { CornerDownLeft } from "lucide-react";
 import { PROMPTS } from "../copy";
+import { PROMPT_RUNS } from "../system/cues";
 import { SuperAt } from "../components/SuperAt";
-import { Caret, typed } from "../components/ui";
+import { Caret } from "../components/ui";
+import { typed } from "../system/typing";
 import { ORRERY_SOURCE } from "../pages/Orrery";
 import { lerp, prog } from "../system/anim";
 import { useTheme } from "../system/theme";
@@ -17,16 +19,6 @@ import { EASE, FONT, HAIRLINE, RF, TYPE } from "../system/tokens";
 
 const CODE_LINES = ORRERY_SOURCE.split("\n");
 const LINE_H = 27;
-
-/** Prompt typing windows: the orrery, then one prompt per two beats. */
-const PROMPT_RUNS = [
-  { text: PROMPTS.orrery, from: at(1.5), to: at(4.0) },
-  { text: PROMPTS.synth16, from: at(6.0), to: at(6.0) + ms(440) },
-  { text: PROMPTS.rhine, from: at(7.0), to: at(7.0) + ms(440) },
-  { text: PROMPTS.aquarium, from: at(8.0), to: at(8.0) + ms(440) },
-  { text: PROMPTS.platformer, from: at(9.0), to: at(9.0) + ms(440) },
-];
-export const ACT0_TYPING = PROMPT_RUNS;
 
 export const Act0World: React.FC = () => {
   const frame = useCurrentFrame();
