@@ -12,6 +12,7 @@
     "lint": "eslint src scripts",
     "check": "tsx scripts/check.ts",
     "stills": "tsx scripts/stills.ts",
+    "music": "tsx scripts/music.ts",
     "vo": "tsx scripts/vo.ts",
     "render:60": "pnpm audio && tsx scripts/vo.ts && remotion render KeptFilm60 out/kept-launch-film-60.raw.mp4 && tsx scripts/master.ts out/kept-launch-film-60.raw.mp4 out/kept-launch-film-60.mp4"
   },

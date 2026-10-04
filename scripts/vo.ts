@@ -6,7 +6,8 @@
  *   tsx scripts/vo.ts                   # measure public/audio/vo/ (run by `pnpm render:60`)
  *
  * Every line is written to public/audio/vo/<id>.wav at 48 kHz, cut 30 ms
- * before the voice starts and 150 ms after it ends. The measured lengths go to
+ * before the voice starts and 150 ms after it ends, and levelled to −16 LUFS
+ * with peaks under −2 dBFS. The measured lengths go to
  * public/audio/vo/lengths.json, which the cut reads to duck the music. Eleven
  * v4 has no speed setting, so a read can run longer than planned: this fails
  * if any line would run into the next one, and says which.
@@ -26,6 +27,10 @@ const CUT_SECONDS = CUT60_FRAMES / FPS;
 const NOISE = "-45dB";
 const LEAD = 0.03;
 const TAIL = 0.15;
+// VO level: −16 LUFS sits ~8 dB over the music ducked under it; peaks held at −2 dBFS
+const TARGET_LUFS = -16;
+const COMPRESS = "acompressor=threshold=0.1:ratio=2.5:attack=5:release=80";
+const LIMIT = "alimiter=limit=0.794:attack=2:release=50:level=0";
 
 type Span = { from: number; to: number };
 
@@ -51,14 +56,31 @@ function speech(file: string, minPause: number): { spans: Span[]; pauses: Span[]
   return { spans, pauses, length };
 }
 
-/** Cut [from, to] of `file` to the line's wav, with 10 ms / 30 ms fades against clicks. */
-function write(file: string, line: VoLine, from: number, to: number) {
+const loudness = (file: string, filter: string) => {
+  const { stderr } = spawnSync("ffmpeg", ["-hide_banner", "-i", file, "-af", `${filter}ebur128`, "-f", "null", "-"], { encoding: "utf8" });
+  return Number(/I:\s+(-?[\d.]+) LUFS/.exec(stderr.slice(stderr.lastIndexOf("Summary")))?.[1]);
+};
+
+/**
+ * One level for everything cut from `file`: gain to the target, gentle
+ * compression, make-up to the target again, then a peak limiter. Lines from
+ * one take share it, so they keep their level relative to each other.
+ */
+function levelling(file: string) {
+  const g1 = TARGET_LUFS - loudness(file, "");
+  const g2 = TARGET_LUFS - loudness(file, `volume=${g1.toFixed(2)}dB,${COMPRESS},`);
+  return `volume=${g1.toFixed(2)}dB,${COMPRESS},volume=${g2.toFixed(2)}dB,${LIMIT}`;
+}
+
+/** Cut [from, to] of `file` to the line's wav, levelled, with 10 ms / 30 ms fades against clicks. */
+function write(file: string, level: string, line: VoLine, from: number, to: number) {
   fs.mkdirSync(DIR, { recursive: true });
   const out = path.join(DIR, `${line.id}.wav`);
   const len = to - from;
   execFileSync("ffmpeg", [
-    "-y", "-loglevel", "error", "-i", file, "-ss", from.toFixed(3), "-to", to.toFixed(3),
-    "-af", `afade=t=in:d=0.01,afade=t=out:st=${(len - 0.03).toFixed(3)}:d=0.03`,
+    "-y", "-loglevel", "error", "-i", file,
+    // atrim + asetpts: the fades below count from the line's start, not the take's
+    "-af", `atrim=start=${from.toFixed(3)}:end=${to.toFixed(3)},asetpts=PTS-STARTPTS,${level},afade=t=in:d=0.01,afade=t=out:st=${(len - 0.03).toFixed(3)}:d=0.03`,
     "-ar", "48000", "-c:a", "pcm_s16le", out,
   ]);
   console.log(`${line.id}  ${len.toFixed(2)} s  ← ${path.basename(file)} ${from.toFixed(2)}–${to.toFixed(2)} s`);
@@ -66,9 +88,9 @@ function write(file: string, line: VoLine, from: number, to: number) {
 
 /** One line in its own file: trim to the voice. */
 function trimLine(file: string, line: VoLine) {
-  const { spans, length } = speech(file, 0.2);
+  const { spans, length } = speech(file, 0.05);
   if (!spans.length) throw new Error(`${file}: no voice found above ${NOISE}`);
-  write(file, line, Math.max(0, spans[0]!.from - LEAD), Math.min(length, spans.at(-1)!.to + TAIL));
+  write(file, levelling(file), line, Math.max(0, spans[0]!.from - LEAD), Math.min(length, spans.at(-1)!.to + TAIL));
 }
 
 /**
@@ -78,9 +100,11 @@ function trimLine(file: string, line: VoLine) {
  */
 function splitTake(file: string) {
   const { spans, pauses, length } = speech(file, 0.3);
-  const first = spans[0];
-  const last = spans.at(-1);
-  if (!first || !last) throw new Error(`${file}: no voice found above ${NOISE}`);
+  // a short silence before the first word or after the last isn't a break, but it isn't voice either
+  const fine = speech(file, 0.05).spans;
+  if (!spans.length || !fine.length) throw new Error(`${file}: no voice found above ${NOISE}`);
+  const first = { from: fine[0]!.from, to: spans[0]!.to };
+  const last = { from: spans.at(-1)!.from, to: fine.at(-1)!.to };
   const inner = pauses.filter((p) => p.from > first.from && p.to < last.to);
   const breaks = [...inner].sort((a, b) => b.to - b.from - (a.to - a.from)).slice(0, VO_LINES.length - 1).sort((a, b) => a.from - b.from);
   if (breaks.length !== VO_LINES.length - 1) {
@@ -110,7 +134,8 @@ function splitTake(file: string) {
     for (const p of pieces) console.log(`${p.line.id}  ${p.voice.toFixed(2)} s of voice, ~${voSeconds(p.line.text).toFixed(2)} s expected`);
     throw new Error(`${file}: the pauses don't fall between lines (${odd.map((p) => p.line.id).join(", ")}). Lengthen the pauses, or send the lines as separate files.`);
   }
-  for (const p of pieces) write(file, p.line, p.from, p.to);
+  const level = levelling(file);
+  for (const p of pieces) write(file, level, p.line, p.from, p.to);
 }
 
 /** The lengths of the VO files that exist. */

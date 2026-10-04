@@ -81,10 +81,22 @@ spring) are mixed from `src/system/cues.ts`. The render is mastered to −14 LUF
 / −1 dBTP. I could not listen to the result in this environment; the
 waveform, spectrogram and per-section loudness were checked instead.
 
-With the licensed track: drop it at `public/audio/music.wav` (it is picked up
-automatically), set `BPM` and `DOWNBEAT_OFFSET` in `src/system/timeline.ts` if
-its grid differs, and re-render. Every hit, the synth lights and the platformer
-re-time from those two numbers.
+**The real music** is the two ElevenLabs takes. Both measured 120.00 BPM with
+downbeats ~20 ms after the film's bar lines, so `BPM` and `DOWNBEAT_OFFSET`
+stay as they are. Their sections came early, so `scripts/music.ts` edits each
+one on bar lines to land the drops on the tile (0:12 in the cut, 0:22 in the
+film). The 60 s cut also gets a second drop on the 0:48 grid snap, and in the
+film a break now re-enters with the 1:26 whip. Seams are placed where the bars
+measure near-identical. The 150 s take's second half needed no edit: its kick
+drops out as the 1:48 whip lands and it goes quiet as the picture turns dark.
+Details are in AUDIO.md. I couldn't listen here: the seams were checked by
+sample continuity and level against the track's own bar lines, and the drops by
+per-bar loudness. **Listen to the seams** (60 s: 0:04, 0:06, 0:44, 0:52; 150 s:
+0:08, 1:34) before publishing.
+
+One side effect: the pocket synth page lights its pads from `SYNTH_STEPS`, the
+pattern the temp bed played. The pads still flash on the beat, but no longer
+on the music's own notes.
 
 ## 7. Visual QA
 
@@ -153,7 +165,7 @@ every hit stays on the beat.
 
 ## 10. Before the final render — open items (my guess at §15)
 
-1. **Music.** Licensed 120 BPM track at `public/audio/music.wav`; adjust `BPM` / `DOWNBEAT_OFFSET`; re-render.
+1. **Music.** Done with the ElevenLabs takes, edited to picture (§6). Listen to the seams, and confirm your ElevenLabs plan covers commercial use.
 2. **Unbuilt features on screen** (CLAIMS.md): badge, rename, provenance, remix, Explore, share kit, walls, the MCP tool. Ship as-is, mark as coming, or cut — your call per feature.
 3. **`{model}` names** (`MODELS` in `src/copy.ts`): real model family names, plain text, alphabetical. Brand/legal sign-off, or neutral labels.
 4. **The reconstructed supers and Acts 5–7 choreography** — sign-off, or send §9.

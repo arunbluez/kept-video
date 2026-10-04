@@ -1,13 +1,44 @@
 # Audio: music and voice-over
 
-The music in this repo is a **temp bed** I synthesised in code. It keeps the
-sync points honest, but it isn't good enough to ship. This page covers
-replacing it, plus an optional voice-over for the 60 s cut.
-
 Both cuts run at **120 BPM from frame 0**. Every cut, snap and super lands on
 that grid, so the music has to as well.
 
-## 1. Music: generate it in ElevenLabs (recommended)
+## Status
+
+The renders use the **ElevenLabs music takes** (`music-60.mp3`, `music-150.mp3`)
+and the **one-take VO** (`vo.mp3`), all generated from `elevenlabs/prompts.md`.
+None of them is committed. The music is ElevenLabs output under your plan's
+terms and stays out of a public repo, so keep the original files. Without them,
+the compositions fall back to a **temp bed** I synthesised in code. It keeps the
+sync points honest, but it must not be published.
+
+**Measured.** Both takes hold **120.00 BPM** for their full length, with the
+downbeat ~20 ms after each even second, already on the film's grid. They
+didn't put their sections where the prompts asked: the 60 s take's drop came
+at 0:24 instead of 0:12, the 150 s take's at 0:16 instead of 0:22. The 150 s
+take's second half matched on its own: the kick cuts out at 1:48 (the whip
+lands at 1:48), the breakdown goes quiet at 1:52 (the picture turns dark at
+1:52), and the lift starts at 2:10.
+
+**Edited to picture** with `pnpm music` (`scripts/music.ts`). The edits are cut
+on bar lines, and every seam joins bars that measured near-identical:
+
+| Cut | Edit | Lands |
+|---|---|---|
+| 60 s | intro shortened to 3 bars; take bars 9–27 (kick, fill, the full drop); bars 10–13 again (build, fill, drop); bars 26–29 (the drop's end, the take's ending) | kick on the first cut 0:06 · **drop on the tile 0:12** · dip 0:44 · **second drop on the grid snap 0:48** · ending 0:56 |
+| 150 s | 3 bars added to the intro (a repeat of bars 1–3); 3 groove bars (44–46) taken out before a break | **drop on the tile 0:22** · a break re-enters with the whip at **1:26** · from 1:34 on, the take at its own times |
+
+```bash
+pnpm music 60  music-60.mp3    # → public/audio/music-60.wav
+pnpm music 150 music-150.mp3   # → public/audio/music.wav
+pnpm vo vo.mp3                 # → public/audio/vo/vo-01.wav … vo-11.wav
+pnpm render:60 && pnpm render
+```
+
+The edits are made for these two takes; `pnpm music` refuses a take of a
+different length. A new take needs a new edit, so send it to me.
+
+## 1. Music: generate it in ElevenLabs
 
 A generated track can be told *where* its drop, lift and ending fall, so it
 lands on the picture. A library track can't. ElevenLabs says Eleven Music is
@@ -58,9 +89,9 @@ pnpm render:60 && pnpm render
 ```
 
 The compositions pick these files up automatically in place of the temp bed.
-If a take's first downbeat isn't exactly at 0:00, or its tempo drifts, send it
-to me. I'll measure the tempo and downbeat and set `BPM` / `DOWNBEAT_OFFSET` in
-`src/system/timeline.ts`, or trim the lead-in, before re-rendering.
+In practice a take also needs editing to the picture (see **Status** above):
+send it to me, and I'll measure its tempo and downbeat, and either edit it on
+bar lines or set `BPM` / `DOWNBEAT_OFFSET` in `src/system/timeline.ts`.
 
 > **Faster loop:** let this environment reach `api.elevenlabs.io` (Network
 > access in the environment settings) and add `ELEVENLABS_API_KEY` as an
@@ -117,9 +148,15 @@ pnpm render:60
 `pnpm vo` cuts the take at its ten clearest pauses and trims each line to 30 ms
 before the voice starts. It stops if the pauses don't clearly fall between
 lines. It then measures every line and fails if one would run into the next;
-v4 has no speed setting, so this is the timing check. The cut ducks the music to
-half under each line, using those measured lengths. VO files stay out of git,
-like the music.
+v4 has no speed setting, so this is the timing check. It also levels the
+lines to −16 LUFS with peaks under −2 dBFS, using one gain for the whole take,
+so the lines keep their level relative to each other. The cut ducks the music
+to 40% (−8 dB) under each line, using the measured lengths. VO files stay out
+of git, like the music.
+
+The supplied take split cleanly: the pauses between lines were 0.9–1.6 s and
+the pauses inside lines at most 0.54 s. No tag was read aloud, and every line
+fits; the tightest is vo-02, at 3.64 s of its 3.75 s.
 
 ## 3. Royalty-free library tracks (fallback)
 

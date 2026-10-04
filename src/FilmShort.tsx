@@ -32,7 +32,7 @@ const voFiles = () => {
   });
 };
 
-/** Music gain under the VO: down to half while a line plays, 150 ms ramps. */
+/** Music gain under the VO: down to 40% (−8 dB) while a line plays, 150 ms ramps. */
 const duck = (frame: number, lines: VoLine[], lengths: VoLengths) => {
   let g = 1;
   for (const l of lines) {
@@ -40,7 +40,7 @@ const duck = (frame: number, lines: VoLine[], lengths: VoLengths) => {
     const b = (l.at + voLength(l, lengths)) * FPS + ms(150);
     const inn = clamp((frame - a) / ms(150));
     const out = clamp((b - frame) / ms(150));
-    g = Math.min(g, 1 - 0.5 * Math.min(inn, out));
+    g = Math.min(g, 1 - 0.6 * Math.min(inn, out));
   }
   return g;
 };

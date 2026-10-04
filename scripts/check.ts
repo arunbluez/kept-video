@@ -135,6 +135,11 @@ check(
   voBad.length === 0,
   voBad.join(", ") || `${VO_LINES.length} lines, ${Object.keys(voMeasured).length} measured`,
 );
+for (const [file, seconds] of [["public/audio/music-60.wav", 60], ["public/audio/music.wav", 150]] as const) {
+  if (!fs.existsSync(file)) continue;
+  const len = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file], { encoding: "utf8" }));
+  check(`${file} is exactly ${seconds} s`, Math.abs(len - seconds) < 0.01, `${len.toFixed(3)} s`);
+}
 const prompts = read(path.resolve("elevenlabs/prompts.md"));
 const audioDoc = read(path.resolve("AUDIO.md"));
 const voStale = VO_LINES.filter((l) => !prompts.includes(voPrompt(l)) || !audioDoc.includes(l.text)).map((l) => l.id);
