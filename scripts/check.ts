@@ -14,11 +14,12 @@ import path from "node:path";
 import { publishResponseSchema, slugSchema } from "@kept/shared";
 import { containsProfanity, isReservedSlug } from "@kept/slug";
 import { CAMERA_KEYS } from "../src/acts/camera-path";
-import { LAPSED_SLUG, ORRERY_NAME, ORRERY_SLUG, RESPONSE, SUPERS, SYNTH_SLUG, VO_LINES, WAY_SLUGS, voSeconds } from "../src/copy";
+import { LAPSED_SLUG, ORRERY_NAME, ORRERY_SLUG, RESPONSE, SUPERS, SYNTH_SLUG, VO_LINES, WAY_SLUGS, voClashes, voPrompt } from "../src/copy";
 import { CUT60_FRAMES, PIECES, WIPE } from "../src/cut60";
 import { CUES } from "../src/system/cues";
 import { themeMix } from "../src/system/theme";
 import { DOWNBEAT_OFFSET, DURATION_IN_FRAMES, FPS, FRAMES_PER_BEAT, THEME_SWAPS, WHIPS, at } from "../src/system/timeline";
+import { measureVo } from "./vo";
 
 type Result = { name: string; ok: boolean; detail: string };
 const results: Result[] = [];
@@ -126,9 +127,18 @@ for (const sp of superSpans) {
   }
 }
 check("60 s cut: every super it shows holds its minimum", clipped.length === 0, clipped.join("; "));
-const vo = [...VO_LINES].sort((a, b) => a.at - b.at);
-const voBad = vo.filter((l, i) => l.at < 0 || l.at + voSeconds(l.text) > CUT60_FRAMES / FPS || (i > 0 && vo[i - 1]!.at + voSeconds(vo[i - 1]!.text) > l.at));
-check("60 s cut: VO lines fit and never overlap", voBad.length === 0, voBad.map((l) => l.id).join(", ") || `${vo.length} lines`);
+// measured from public/audio/vo/ where a line exists, estimated where it doesn't
+const voMeasured = measureVo();
+const voBad = voClashes(voMeasured, CUT60_FRAMES / FPS);
+check(
+  "60 s cut: VO lines fit and never overlap",
+  voBad.length === 0,
+  voBad.join(", ") || `${VO_LINES.length} lines, ${Object.keys(voMeasured).length} measured`,
+);
+const prompts = read(path.resolve("elevenlabs/prompts.md"));
+const audioDoc = read(path.resolve("AUDIO.md"));
+const voStale = VO_LINES.filter((l) => !prompts.includes(voPrompt(l)) || !audioDoc.includes(l.text)).map((l) => l.id);
+check("VO script in prompts.md and AUDIO.md matches copy.ts", voStale.length === 0, voStale.join(", "));
 
 /* ── the renders ────────────────────────────────────────────────────── */
 function checkRender(label: string, file: string, seconds: number) {

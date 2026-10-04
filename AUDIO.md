@@ -77,32 +77,49 @@ recommend **no VO on the 150 s film**, which is a music-led showreel.
 | File | At | Line | On screen |
 |---|---|---|---|
 | `vo-01` | 0:01.75 | AI makes pages now. Good ones. | *AI makes pages now. Good ones.* |
-| `vo-02` | 0:06.25 | A screenshot doesn't move. A file doesn't travel. | the three vignettes |
+| `vo-02` | 0:06.00 | A screenshot doesn't move. A file doesn't travel. | the three vignettes |
 | `vo-03` | 0:09.75 | Your work deserves a link. | *Your work deserves a link.* |
 | `vo-04` | 0:12.75 | Drop it on kept. | the file lands in the tile |
 | `vo-05` | 0:17.75 | It's live in seconds. No account. | *Live in seconds. No account.* |
 | `vo-06` | 0:24.00 | Every page starts as a draft. | *Every page starts as a draft.* |
-| `vo-07` | 0:28.00 | Keep it, and it's yours. Forever. | *Kept — forever.* |
-| `vo-08` | 0:32.75 | Your agent can publish too. No key, no account. You keep it. | *Your agent publishes. You keep it.* |
+| `vo-07` | 0:28.00 | Keep it, and it's yours… forever. | *Kept — forever.* |
+| `vo-08` | 0:32.75 | Your agent can publish too. No key, no account. YOU keep it. | *Your agent publishes. You keep it.* |
 | `vo-09` | 0:42.00 | However it's made. | *However it's made.* |
 | `vo-10` | 0:54.00 | Made with AI. Kept by you. | *Made with AI. Kept by you.* |
 | `vo-11` | 0:57.25 | kept dot host. | `kept.host` |
 
-The lines live in `src/copy.ts` (`VO_LINES`). If you change wording or timing
-there, `pnpm check` confirms the lines still fit and never overlap.
+**How to generate it:** see the [voice-over section of
+`elevenlabs/prompts.md`](elevenlabs/prompts.md#voice-over--60-s-cut-optional).
+It's written for Eleven v4 and covers the voice, the settings, a one-take
+script with an audio tag on every line, and how to redo single lines. In short:
 
-**Voice.** Calm, warm, confident. Mid-low register, unhurried but crisp, a
-slight smile, no hype, no "announcer" voice. "kept" is said as the plain word,
-lower-case in spirit.
+- **Eleven v4**, with a **Voice Library** voice that already sounds like a calm
+  English narrator and has a clean preview. Not Voice Design.
+- Only **Stability** (~60%) and **Similarity** (~75%). v4 has no Style or Speed
+  slider and no SSML.
+- **Generate the whole script as one take**, so the voice stays the same from
+  line to line. Each line has a voice-quality tag (`[Warm, sincere tone]`) and
+  the lines are separated by `[long pause]`. Pacing comes from punctuation: one
+  ellipsis for a held beat, one capitalised word for stress, the URL written out.
 
-**ElevenLabs settings** (starting points): Stability ~55%, Similarity ~75%,
-Style 0–15%, Speaker boost on. Generate **each line as its own file**, so
-timing stays exact and any line can be redone alone. Trim leading silence to
-under 50 ms.
+The lines and tags live in `src/copy.ts` (`VO_LINES`). If you change one,
+update `elevenlabs/prompts.md` and this table too; `pnpm check` fails until all
+three match.
 
-**Drop in:** save as `public/audio/vo/vo-01.wav` … `vo-11.wav` (`.mp3` works
-too), then run `pnpm render:60`. Each line plays at its time, and the music
-ducks to half under it.
+**Drop in:**
+
+```bash
+pnpm vo take.wav      # split the take → public/audio/vo/vo-01.wav … vo-11.wav
+pnpm vo vo-04.mp3     # replace one line (the file name carries its id)
+pnpm render:60
+```
+
+`pnpm vo` cuts the take at its ten clearest pauses and trims each line to 30 ms
+before the voice starts. It stops if the pauses don't clearly fall between
+lines. It then measures every line and fails if one would run into the next;
+v4 has no speed setting, so this is the timing check. The cut ducks the music to
+half under each line, using those measured lengths. VO files stay out of git,
+like the music.
 
 ## 3. Royalty-free library tracks (fallback)
 

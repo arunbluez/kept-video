@@ -143,7 +143,13 @@ every hit stays on the beat.
   `Sequence`, not `Freeze`. Freeze clamps to the 60 s composition's length, which
   froze the picture at 0:59.98 of film time in the first test render.
 - The optional VO (`VO_LINES` in `src/copy.ts`) plays from `public/audio/vo/`
-  when the files exist, with the music ducking under it. See AUDIO.md.
+  when the files exist, with the music ducking under it. The script follows
+  ElevenLabs' Eleven v4 guidance: a voice-quality audio tag on each line,
+  punctuation for pacing (v4 has no SSML or speed setting), and one take for
+  consistency. `pnpm vo` splits the take and measures each line; the cut ducks
+  on the measured lengths, and the split fails if a line would overrun the
+  next. vo-02 now starts at 0:06.00, on the cut, to give the tightest line
+  3.75 s. See AUDIO.md.
 
 ## 10. Before the final render — open items (my guess at §15)
 

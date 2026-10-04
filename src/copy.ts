@@ -150,23 +150,45 @@ export type SuperId = keyof typeof SUPERS;
 
 /**
  * A sparse read-along VO for the 60 s cut, timed to land with its supers.
- * Nothing plays until the files exist: generate each line (e.g. in ElevenLabs)
- * and save it as public/audio/vo/<id>.wav or .mp3. `at` is seconds into the
- * 60 s cut. The music ducks under each line. See AUDIO.md.
+ * Written for ElevenLabs Eleven v4: `tag` is the audio tag that directs the
+ * delivery (it names the voice quality so it isn't read as a sound cue), and
+ * `text` is what is spoken. Punctuation carries the pacing, since v4 has no
+ * SSML breaks: one ellipsis for a held beat (vo-07), one capitalised word for
+ * emphasis (vo-08), URLs spelled out (vo-11). The paste-ready script is in
+ * elevenlabs/prompts.md; `pnpm check` keeps it in step with these lines.
+ *
+ * Nothing plays until the files exist: `pnpm vo <take>` splits a take into
+ * public/audio/vo/<id>.wav. `at` is seconds into the 60 s cut. The music ducks
+ * under each line. See AUDIO.md.
  */
 export const VO_LINES = [
-  { id: "vo-01", at: 1.75, text: "AI makes pages now. Good ones." },
-  { id: "vo-02", at: 6.25, text: "A screenshot doesn't move. A file doesn't travel." },
-  { id: "vo-03", at: 9.75, text: "Your work deserves a link." },
-  { id: "vo-04", at: 12.75, text: "Drop it on kept." },
-  { id: "vo-05", at: 17.75, text: "It's live in seconds. No account." },
-  { id: "vo-06", at: 24.0, text: "Every page starts as a draft." },
-  { id: "vo-07", at: 28.0, text: "Keep it, and it's yours. Forever." },
-  { id: "vo-08", at: 32.75, text: "Your agent can publish too. No key, no account. You keep it." },
-  { id: "vo-09", at: 42.0, text: "However it's made." },
-  { id: "vo-10", at: 54.0, text: "Made with AI. Kept by you." },
-  { id: "vo-11", at: 57.25, text: "kept dot host." },
+  { id: "vo-01", at: 1.75, tag: "Calm, warm narrator voice, unhurried", text: "AI makes pages now. Good ones." },
+  { id: "vo-02", at: 6.0, tag: "Matter-of-fact tone, even pace", text: "A screenshot doesn't move. A file doesn't travel." },
+  { id: "vo-03", at: 9.75, tag: "Warm, sincere tone", text: "Your work deserves a link." },
+  { id: "vo-04", at: 12.75, tag: "Light, inviting tone", text: "Drop it on kept." },
+  { id: "vo-05", at: 17.75, tag: "Easy, confident tone", text: "It's live in seconds. No account." },
+  { id: "vo-06", at: 24.0, tag: "Calm, plain tone", text: "Every page starts as a draft." },
+  { id: "vo-07", at: 28.0, tag: "Warm, reassuring tone", text: "Keep it, and it's yours… forever." },
+  { id: "vo-08", at: 32.75, tag: "Relaxed, matter-of-fact tone", text: "Your agent can publish too. No key, no account. YOU keep it." },
+  { id: "vo-09", at: 42.0, tag: "Quiet, thoughtful tone", text: "However it's made." },
+  { id: "vo-10", at: 54.0, tag: "Warm, confident tone", text: "Made with AI. Kept by you." },
+  { id: "vo-11", at: 57.25, tag: "Soft, warm voice, closing line", text: "kept dot host." },
 ] as const;
 
-/** A line's expected length, for ducking and overlap checks (~2.7 words/s). */
-export const voSeconds = (text: string) => 0.4 + text.split(/\s+/).length / 2.7;
+export type VoLine = (typeof VO_LINES)[number];
+export type VoLengths = Partial<Record<VoLine["id"], number>>;
+
+/** The line as typed into ElevenLabs: the audio tag, then the words. */
+export const voPrompt = (l: VoLine) => `[${l.tag}] ${l.text}`;
+
+/** A line's expected length before it exists (~2.7 words/s, + 0.4 s per held beat). */
+export const voSeconds = (text: string) => 0.4 + text.split(/\s+/).length / 2.7 + 0.4 * (text.match(/…/g)?.length ?? 0);
+
+/** A line's length: measured from its file once `pnpm vo` has run, estimated until then. */
+export const voLength = (l: VoLine, lengths: VoLengths = {}) => lengths[l.id] ?? voSeconds(l.text);
+
+/** Ids of the lines that would run into the next line, or past `end` seconds. */
+export const voClashes = (lengths: VoLengths, end: number) => {
+  const sorted = [...VO_LINES].sort((a, b) => a.at - b.at);
+  return sorted.filter((l, i) => l.at < 0 || l.at + voLength(l, lengths) > (sorted[i + 1]?.at ?? end)).map((l) => l.id);
+};

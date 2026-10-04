@@ -8,6 +8,7 @@ the same frames (`src/cut60.ts`).
 - [REVIEW.md](REVIEW.md) — what was built, where it departs from the brief and why, open decisions
 - [CLAIMS.md](CLAIMS.md) — every product claim in the film, checked against the product code
 - [AUDIO.md](AUDIO.md) — replacing the temp music (ElevenLabs composition plans), the optional VO
+- [elevenlabs/prompts.md](elevenlabs/prompts.md) — paste-ready ElevenLabs prompts: both music tracks, the VO for Eleven v4
 
 > **The music in renders made from this repo is a synthesised temp bed and
 > must not be published.** Drop real tracks at `public/audio/music.wav` (150 s)
@@ -29,6 +30,7 @@ pnpm stills --act 2           # one still every 1.5 s through an act
 pnpm stills --sheet           # one still per bar → out/contact-sheet.png
 pnpm audio                    # regenerate public/audio/temp-bed.wav + sfx.wav
 pnpm render                   # audio → render → master (−14 LUFS) → out/kept-launch-film.mp4
+pnpm vo take.wav              # split a VO take into public/audio/vo/ and check each line fits (AUDIO.md)
 pnpm render:60                # the 60 s cut → out/kept-launch-film-60.mp4
 pnpm stills --comp KeptFilm60 12 30   # stills of the 60 s cut, at its own seconds
 pnpm check                    # acceptance checks (source rules + the render)
@@ -54,6 +56,6 @@ src/
   components/           type (supers, underline), frame, cursor, mascot, UI kit
   pages/                the AI-made sample pages — each a pure function of the frame
 elevenlabs/             composition plans for generating the real music
-scripts/                audio synthesis, stills, mastering, checks
+scripts/                audio synthesis, VO split/measure, stills, mastering, checks
 kept/                   the product (submodule)
 ```
