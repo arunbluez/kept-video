@@ -7,6 +7,7 @@
  *                              timed before the licensed track arrives. It is
  *                              NOT for publication.
  *   public/audio/sfx.wav       every sound effect, mixed from src/system/cues.ts.
+ *   public/audio/*-60.wav      both, conformed to the 60 s cut (src/cut60.ts).
  *
  * The bed plays the pocket synth's own pattern (`SYNTH_STEPS`) and the drum
  * machine remix's grid (`DRUM_ROWS`), so what the pages light up is what you
@@ -16,6 +17,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { rng } from "../src/system/anim";
+import { CUT60_FRAMES, PIECES } from "../src/cut60";
 import { CUES, type Cue } from "../src/system/cues";
 import { DRUM_ROWS, SYNTH_STEPS } from "../src/system/music";
 import { BPM, DOWNBEAT_OFFSET, DURATION_IN_FRAMES, FPS } from "../src/system/timeline";
@@ -32,10 +34,14 @@ const barT = (bar: number, sixteenth = 0) => T0 + ((bar - 1) * 4 + sixteenth / 4
 const hz = (midi: number) => 440 * Math.pow(2, (midi - 69) / 12);
 
 class Bus {
-  L = new Float32Array(LEN);
-  R = new Float32Array(LEN);
+  readonly L: Float32Array;
+  readonly R: Float32Array;
+  constructor(readonly len = LEN) {
+    this.L = new Float32Array(len);
+    this.R = new Float32Array(len);
+  }
   add(i: number, v: number, pan = 0) {
-    if (i < 0 || i >= LEN) return;
+    if (i < 0 || i >= this.len) return;
     this.L[i]! += v * Math.min(1, 1 - pan);
     this.R[i]! += v * Math.min(1, 1 + pan);
   }
@@ -491,8 +497,8 @@ function sfx(bus: Bus, c: Cue) {
  * Soft-clip and write 16-bit stereo. `normalise` lifts or lowers to `peak`;
  * otherwise the levels stand as designed and `peak` is only a ceiling.
  */
-function writeWav(file: string, bus: Bus, peak: number, normalise: boolean) {
-  const n = Math.ceil(DUR * SR);
+function writeWav(file: string, bus: Bus, peak: number, normalise: boolean, seconds = DUR) {
+  const n = Math.ceil(seconds * SR);
   let max = 1e-9;
   const L = new Float32Array(n);
   const R = new Float32Array(n);
@@ -526,9 +532,37 @@ function writeWav(file: string, bus: Bus, peak: number, normalise: boolean) {
   console.log(`${path.relative(process.cwd(), file)}  ${(n / SR).toFixed(2)} s`);
 }
 
+/**
+ * Conform a full-length bus to the 60 s cut (src/cut60.ts): the same pieces,
+ * the same bar-line cuts as the picture, with an 8 ms crossfade at each join
+ * so no cut clicks.
+ */
+function conform(bus: Bus): Bus {
+  const seconds = CUT60_FRAMES / FPS;
+  const out = new Bus(Math.ceil(seconds * SR) + SR);
+  const xf = Math.round(0.008 * SR);
+  for (const p of PIECES) {
+    const s0 = Math.round((p.srcFrom / FPS) * SR);
+    const s1 = Math.round((p.srcTo / FPS) * SR);
+    const o0 = Math.round((p.outFrom / FPS) * SR);
+    const n = s1 - s0;
+    for (let i = -xf; i < n + xf; i++) {
+      const g = i < 0 ? (i + xf) / xf : i >= n ? (n + xf - i) / xf : 1;
+      const src = s0 + i;
+      const dst = o0 + i;
+      if (src < 0 || src >= bus.len || dst < 0 || dst >= out.len) continue;
+      out.L[dst]! += bus.L[src]! * g;
+      out.R[dst]! += bus.R[src]! * g;
+    }
+  }
+  return out;
+}
+
 const bed = renderBed();
 writeWav(path.resolve("public/audio/temp-bed.wav"), bed, 0.85, true);
+writeWav(path.resolve("public/audio/temp-bed-60.wav"), conform(bed), 0.85, true, CUT60_FRAMES / FPS);
 
 const fx = new Bus();
 for (const c of CUES) sfx(fx, c);
 writeWav(path.resolve("public/audio/sfx.wav"), fx, 0.8, false);
+writeWav(path.resolve("public/audio/sfx-60.wav"), conform(fx), 0.8, false, CUT60_FRAMES / FPS);

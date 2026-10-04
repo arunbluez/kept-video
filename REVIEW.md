@@ -116,7 +116,36 @@ contact sheet (`out/contact-sheet.png`, one still per bar) is the overview.
 - Everything is deterministic: seeded PRNG for every jitter, typing rhythm, slug,
   glyph and grain.
 
-## 9. Before the final render — open items (my guess at §15)
+## 9. The 60-second cut
+
+`KeptFilm60` is an **edit** of the film, not a re-animation: four continuous
+stretches (`src/cut60.ts`), each starting and ending on a bar line, joined by an
+eighth-note hairline wipe (T1). Because it plays the film's own frames, it can't
+drift from it, and the music and SFX are conformed with the same edit list so
+every hit stays on the beat.
+
+| Cut | Film | Beat |
+|---|---|---|
+| 0:00–0:06 | 0:06–0:12 | AI makes pages now. Good ones. |
+| 0:06–0:30 | 0:16–0:40 | stuck → *Your work deserves a link.* → drop, mint, *Live in seconds. No account.* → draft → *Kept — forever.* |
+| 0:30–0:48 | 0:48–1:06 | *Your agent publishes. You keep it.* → three ways in → *However it's made.* → the synth |
+| 0:48–1:00 | 2:14–2:26 | every page on one grid → the mascot → *Made with AI. Kept by you.* · `kept.host` |
+
+- The cut leaves out remix, Explore, the share kit, walls and the rename, so it
+  only claims shipped behaviour. The one exception is the on-page draft badge
+  (0:24–0:30); see CLAIMS.md.
+- It leaves out the dark passage too: cutting into or out of it would flip the
+  theme, which the brief forbids. `pnpm check` asserts no theme change across a cut.
+- The HUD shows the cut's own timecode and renumbers chapters (00 MADE … 05 KEPT).
+- Every super the cut shows still holds its minimum time (checked), and the
+  cut contains no whip.
+- Implementation note: the cut maps its clock onto the film's with an offset
+  `Sequence`, not `Freeze`. Freeze clamps to the 60 s composition's length, which
+  froze the picture at 0:59.98 of film time in the first test render.
+- The optional VO (`VO_LINES` in `src/copy.ts`) plays from `public/audio/vo/`
+  when the files exist, with the music ducking under it. See AUDIO.md.
+
+## 10. Before the final render — open items (my guess at §15)
 
 1. **Music.** Licensed 120 BPM track at `public/audio/music.wav`; adjust `BPM` / `DOWNBEAT_OFFSET`; re-render.
 2. **Unbuilt features on screen** (CLAIMS.md): badge, rename, provenance, remix, Explore, share kit, walls, the MCP tool. Ship as-is, mark as coming, or cut — your call per feature.

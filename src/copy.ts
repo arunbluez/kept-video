@@ -145,3 +145,28 @@ export const SUPERS = {
 } satisfies Record<string, SuperSpec>;
 
 export type SuperId = keyof typeof SUPERS;
+
+/* ───────────────────── voice-over (optional, 60 s cut) ───────────────────── */
+
+/**
+ * A sparse read-along VO for the 60 s cut, timed to land with its supers.
+ * Nothing plays until the files exist: generate each line (e.g. in ElevenLabs)
+ * and save it as public/audio/vo/<id>.wav or .mp3. `at` is seconds into the
+ * 60 s cut. The music ducks under each line. See AUDIO.md.
+ */
+export const VO_LINES = [
+  { id: "vo-01", at: 1.75, text: "AI makes pages now. Good ones." },
+  { id: "vo-02", at: 6.25, text: "A screenshot doesn't move. A file doesn't travel." },
+  { id: "vo-03", at: 9.75, text: "Your work deserves a link." },
+  { id: "vo-04", at: 12.75, text: "Drop it on kept." },
+  { id: "vo-05", at: 17.75, text: "It's live in seconds. No account." },
+  { id: "vo-06", at: 24.0, text: "Every page starts as a draft." },
+  { id: "vo-07", at: 28.0, text: "Keep it, and it's yours. Forever." },
+  { id: "vo-08", at: 32.75, text: "Your agent can publish too. No key, no account. You keep it." },
+  { id: "vo-09", at: 42.0, text: "However it's made." },
+  { id: "vo-10", at: 54.0, text: "Made with AI. Kept by you." },
+  { id: "vo-11", at: 57.25, text: "kept dot host." },
+] as const;
+
+/** A line's expected length, for ducking and overlap checks (~2.7 words/s). */
+export const voSeconds = (text: string) => 0.4 + text.split(/\s+/).length / 2.7;

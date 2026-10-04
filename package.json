@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src scripts",
     "check": "tsx scripts/check.ts",
-    "stills": "tsx scripts/stills.ts"
+    "stills": "tsx scripts/stills.ts",
+    "render:60": "pnpm audio && remotion render KeptFilm60 out/kept-launch-film-60.raw.mp4 && tsx scripts/master.ts out/kept-launch-film-60.raw.mp4 out/kept-launch-film-60.mp4"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",

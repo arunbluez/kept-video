@@ -51,6 +51,14 @@ compresses or extends it. **Not built** = shown in the film, absent from code.
 | 1:21–1:25 | Share kit (1200×630 preview + clip), `SHARE KIT · PRO` | Not in the landing's Pro list (`PRO_FEATURES`) or code |
 | 1:26–1:48 | Walls: `mira.kept.host`, blocks, drag to arrange, phone view | Not in code (would also need profile slugs and a layout editor) |
 
+## The 60-second cut
+
+The 60 s cut (`src/cut60.ts`) is made of **Shipped** and **Partial** moments
+only, with one exception: the on-page **draft badge** (*keep it forever →*, then
+*Kept · permanent*) at 0:24–0:30, which is **Not built**. The agent sequence
+(0:30–0:41) carries the same caveat as above: `publish_page` is the unbuilt MCP
+tool, though the keyless API it would wrap exists.
+
 ## Names and marks
 
 - Model names in `copy.ts` (`MODELS`) are plain text — no logos — but they are

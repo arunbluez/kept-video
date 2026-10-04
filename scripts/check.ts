@@ -14,9 +14,11 @@ import path from "node:path";
 import { publishResponseSchema, slugSchema } from "@kept/shared";
 import { containsProfanity, isReservedSlug } from "@kept/slug";
 import { CAMERA_KEYS } from "../src/acts/camera-path";
-import { LAPSED_SLUG, ORRERY_NAME, ORRERY_SLUG, RESPONSE, SUPERS, SYNTH_SLUG, WAY_SLUGS } from "../src/copy";
+import { LAPSED_SLUG, ORRERY_NAME, ORRERY_SLUG, RESPONSE, SUPERS, SYNTH_SLUG, VO_LINES, WAY_SLUGS, voSeconds } from "../src/copy";
+import { CUT60_FRAMES, PIECES, WIPE } from "../src/cut60";
 import { CUES } from "../src/system/cues";
-import { DURATION_IN_FRAMES, FPS, THEME_SWAPS, WHIPS, at } from "../src/system/timeline";
+import { themeMix } from "../src/system/theme";
+import { DOWNBEAT_OFFSET, DURATION_IN_FRAMES, FPS, FRAMES_PER_BEAT, THEME_SWAPS, WHIPS, at } from "../src/system/timeline";
 
 type Result = { name: string; ok: boolean; detail: string };
 const results: Result[] = [];
@@ -47,6 +49,7 @@ check("every SFX cue lands inside the film", cueOff.length === 0, `${CUES.length
 const EXIT = 0.5; // the exit wipe, one beat
 const words = (lines: (string | { t: string })[][]) => lines.flat().filter((w) => (typeof w === "string" ? w : w.t) !== "—").length;
 const short: string[] = [];
+const superSpans: { id: string; from: number; to: number; need: number }[] = [];
 let violetTotal = 0;
 const violetTwice: string[] = [];
 for (const [id, s] of Object.entries(SUPERS) as [string, { at: number; exit?: number; lines: (string | { t: string; accent?: boolean })[][] }][]) {
@@ -54,6 +57,7 @@ for (const [id, s] of Object.entries(SUPERS) as [string, { at: number; exit?: nu
   const need = 1.2 + 0.25 * n;
   const shown = (s.exit === undefined ? DURATION_IN_FRAMES / FPS : s.exit + EXIT) - s.at;
   if (shown + 1e-9 < need) short.push(`${id} ${shown.toFixed(2)}s < ${need.toFixed(2)}s`);
+  superSpans.push({ id, from: at(s.at), to: s.exit === undefined ? DURATION_IN_FRAMES : at(s.exit + EXIT), need });
   const v = s.lines.flat().filter((w) => typeof w !== "string" && w.accent).length;
   violetTotal += v;
   if (v > 1) violetTwice.push(id);
@@ -84,7 +88,7 @@ check("no gradients, glows or WebGL", bannedHits.length === 0, bannedHits.join("
 
 /* ── motion language ────────────────────────────────────────────────── */
 check("exactly three camera whips (T4)", WHIPS.length === 3, WHIPS.map((w) => `${(w.from / FPS).toFixed(1)}s`).join(", "));
-check("whips are the only motion-blurred frames", read(path.join(SRC, "Film.tsx")).includes("WHIPS.some("), "CameraMotionBlur gated on WHIPS");
+check("whips are the only motion-blurred frames", read(path.join(SRC, "FilmPicture.tsx")).includes("WHIPS.some("), "CameraMotionBlur gated on WHIPS");
 check("theme swaps interpolate over ≥ 3 s", THEME_SWAPS.every((s) => s.to - s.from >= 3 * FPS), THEME_SWAPS.map((s) => `${((s.to - s.from) / FPS).toFixed(1)}s`).join(", "));
 const scrambleCalls = sources.flatMap((f) => [...read(f).matchAll(/\bscramble\(frame/g)].map(() => rel(f)));
 check("scramble-decode only where a URL is born (mint, rename)", scrambleCalls.length === 2, scrambleCalls.join(", "));
@@ -105,27 +109,52 @@ check("anonymous slugs pass the product's slug rules", badSlugs.length === 0, sl
 check("the rename is a valid slug", slugSchema.safeParse(ORRERY_NAME).success, ORRERY_NAME);
 check("first hit after the whip lands on Act 3's downbeat", WHIPS[0]!.to === at(44.0), "");
 
-/* ── the render ─────────────────────────────────────────────────────── */
-const MP4 = path.resolve("out/kept-launch-film.mp4");
-if (fs.existsSync(MP4)) {
-  const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", MP4], { encoding: "utf8" })) as {
+/* ── the 60 s cut ───────────────────────────────────────────────────── */
+check("60 s cut is 60 s", CUT60_FRAMES === 60 * FPS, `${CUT60_FRAMES} frames`);
+const BAR = FRAMES_PER_BEAT * 4;
+const offBar = PIECES.filter((p) => (p.srcFrom - DOWNBEAT_OFFSET) % BAR !== 0 || (p.srcTo - DOWNBEAT_OFFSET) % BAR !== 0);
+check("60 s cut: every piece starts and ends on a bar line", offBar.length === 0, PIECES.map((p) => `${p.srcFrom / FPS}–${p.srcTo / FPS}s`).join(", "));
+const whipInCut = PIECES.filter((p) => WHIPS.some((w) => w.from < p.srcTo + WIPE && w.to > p.srcFrom));
+check("60 s cut: no whip inside a piece", whipInCut.length === 0, "the cut's clock offset would clamp motion-blur samples");
+const flips = PIECES.slice(1).filter((p, i) => Math.abs(themeMix(PIECES[i]!.srcTo - 1) - themeMix(p.srcFrom)) > 0.01);
+check("60 s cut: no theme flip across a cut", flips.length === 0, "");
+const clipped: string[] = [];
+for (const sp of superSpans) {
+  for (const p of PIECES) {
+    const seen = Math.min(sp.to, p.srcTo) - Math.max(sp.from, p.srcFrom);
+    if (seen > 0 && seen / FPS + 1e-9 < sp.need) clipped.push(`${sp.id} ${(seen / FPS).toFixed(2)}s < ${sp.need.toFixed(2)}s`);
+  }
+}
+check("60 s cut: every super it shows holds its minimum", clipped.length === 0, clipped.join("; "));
+const vo = [...VO_LINES].sort((a, b) => a.at - b.at);
+const voBad = vo.filter((l, i) => l.at < 0 || l.at + voSeconds(l.text) > CUT60_FRAMES / FPS || (i > 0 && vo[i - 1]!.at + voSeconds(vo[i - 1]!.text) > l.at));
+check("60 s cut: VO lines fit and never overlap", voBad.length === 0, voBad.map((l) => l.id).join(", ") || `${vo.length} lines`);
+
+/* ── the renders ────────────────────────────────────────────────────── */
+function checkRender(label: string, file: string, seconds: number) {
+  if (!fs.existsSync(file)) {
+    check(`${label}: present`, false, `${rel(file)} not found`);
+    return;
+  }
+  const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", file], { encoding: "utf8" })) as {
     streams: { codec_type: string; codec_name: string; width?: number; height?: number; r_frame_rate?: string; sample_rate?: string; pix_fmt?: string }[];
     format: { duration: string; size: string };
   };
-  const v = probe.streams.find((s) => s.codec_type === "video");
-  const a = probe.streams.find((s) => s.codec_type === "audio");
-  check("render: H.264 1920×1080 yuv420p", v?.codec_name === "h264" && v.width === 1920 && v.height === 1080 && v.pix_fmt === "yuv420p", `${v?.codec_name} ${v?.width}×${v?.height} ${v?.pix_fmt}`);
-  check("render: 60 fps", v?.r_frame_rate === "60/1", v?.r_frame_rate ?? "");
+  const v = probe.streams.find((x) => x.codec_type === "video");
+  const a = probe.streams.find((x) => x.codec_type === "audio");
+  check(`${label}: H.264 1920×1080 yuv420p`, v?.codec_name === "h264" && v.width === 1920 && v.height === 1080 && v.pix_fmt === "yuv420p", `${v?.codec_name} ${v?.width}×${v?.height} ${v?.pix_fmt}`);
+  check(`${label}: 60 fps`, v?.r_frame_rate === "60/1", v?.r_frame_rate ?? "");
   const dur = Number(probe.format.duration);
-  check("render: 150 s", Math.abs(dur - 150) < 0.1, `${dur.toFixed(3)} s, ${(Number(probe.format.size) / 1e6).toFixed(1)} MB`);
-  check("render: AAC 48 kHz audio", a?.codec_name === "aac" && a.sample_rate === "48000", `${a?.codec_name} ${a?.sample_rate}`);
-  const { stderr } = spawnSync("ffmpeg", ["-hide_banner", "-i", MP4, "-af", "ebur128=peak=true", "-f", "null", "-"], { encoding: "utf8" });
-  const lufs = Number(/I:\s+(-?\d+(?:\.\d+)?) LUFS/.exec(stderr.slice(stderr.lastIndexOf("Summary")))?.[1]);
-  const tp = Number(/Peak:\s+(-?\d+(?:\.\d+)?) dBFS/.exec(stderr.slice(stderr.lastIndexOf("Summary")))?.[1]);
-  check("render: −14 LUFS ± 1, true peak ≤ −1 dBTP", Math.abs(lufs + 14) <= 1 && tp <= -0.9, `${lufs} LUFS, ${tp} dBTP`);
-} else {
-  check("render present", false, "out/kept-launch-film.mp4 not found — run `pnpm render`");
+  check(`${label}: ${seconds} s`, Math.abs(dur - seconds) < 0.1, `${dur.toFixed(3)} s, ${(Number(probe.format.size) / 1e6).toFixed(1)} MB`);
+  check(`${label}: AAC 48 kHz audio`, a?.codec_name === "aac" && a.sample_rate === "48000", `${a?.codec_name} ${a?.sample_rate}`);
+  const { stderr } = spawnSync("ffmpeg", ["-hide_banner", "-i", file, "-af", "ebur128=peak=true", "-f", "null", "-"], { encoding: "utf8" });
+  const summary = stderr.slice(stderr.lastIndexOf("Summary"));
+  const lufs = Number(/I:\s+(-?\d+(?:\.\d+)?) LUFS/.exec(summary)?.[1]);
+  const tp = Number(/Peak:\s+(-?\d+(?:\.\d+)?) dBFS/.exec(summary)?.[1]);
+  check(`${label}: −14 LUFS ± 1, true peak ≤ −1 dBTP`, Math.abs(lufs + 14) <= 1 && tp <= -0.9, `${lufs} LUFS, ${tp} dBTP`);
 }
+checkRender("render 150 s", path.resolve("out/kept-launch-film.mp4"), 150);
+checkRender("render 60 s", path.resolve("out/kept-launch-film-60.mp4"), 60);
 
 /* ── report ─────────────────────────────────────────────────────────── */
 const width = Math.max(...results.map((r) => r.name.length));

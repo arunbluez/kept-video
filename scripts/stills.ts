@@ -4,6 +4,7 @@
  *   pnpm tsx scripts/stills.ts 0.5 2.5 4.8          # seconds
  *   pnpm tsx scripts/stills.ts --act 2              # the act's own beats
  *   pnpm tsx scripts/stills.ts --sheet              # one still per bar → contact sheet
+ *   pnpm tsx scripts/stills.ts --comp KeptFilm60 6.1 30.1   # the 60 s cut, at its own seconds
  *
  * Bundles once and reuses the browser, so a dozen stills cost one bundle. The
  * webpack overrides (aliases) come from remotion.config.ts.
@@ -16,7 +17,11 @@ import { openBrowser, renderStill, selectComposition } from "@remotion/renderer"
 import { actFrom, actTo, at, FPS } from "../src/system/timeline";
 import { webpackOverride } from "../webpack-override";
 
-const args = process.argv.slice(2);
+const argv = process.argv.slice(2);
+// `--comp KeptFilm60` renders the 60 s cut instead; its seconds are its own clock
+const compIdx = argv.indexOf("--comp");
+const compId = compIdx >= 0 ? argv[compIdx + 1]! : "KeptFilm";
+const args = compIdx >= 0 ? argv.filter((_, i) => i !== compIdx && i !== compIdx + 1) : argv;
 // Each run writes to its own folder, so old stills never mix into a new tile.
 const outDir = path.resolve("out/stills", new Date().toISOString().replace(/[:.]/g, "-"));
 fs.mkdirSync(outDir, { recursive: true });
@@ -43,10 +48,10 @@ const browserExecutable =
 
 const serveUrl = await bundle({ entryPoint: path.resolve("src/index.ts"), webpackOverride });
 const browser = await openBrowser("chrome", { browserExecutable });
-const composition = await selectComposition({ serveUrl, id: "KeptFilm", puppeteerInstance: browser });
+const composition = await selectComposition({ serveUrl, id: compId, puppeteerInstance: browser });
 const files: string[] = [];
 for (const t of times) {
-  const frame = Math.min(composition.durationInFrames - 1, at(t));
+  const frame = Math.min(composition.durationInFrames - 1, compId === "KeptFilm" ? at(t) : Math.round(t * FPS));
   const file = path.join(outDir, `${sheet ? "sheet-" : ""}${t.toFixed(2).padStart(6, "0")}.png`);
   await renderStill({ composition, serveUrl, frame, output: file, puppeteerInstance: browser, scale: sheet ? 0.25 : 0.5 });
   files.push(file);
