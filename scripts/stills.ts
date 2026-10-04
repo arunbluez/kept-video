@@ -54,27 +54,20 @@ for (const t of times) {
 }
 await browser.close({ silent: true });
 
-if (!sheet && files.length > 1) tile(files, Math.min(4, files.length), path.resolve("out/tile.png"));
+if (!sheet && files.length > 1) tile(files, Math.min(4, files.length), path.resolve("out/tile.png"), 960, 540);
+// 75 bars → a 5 × 15 grid, chapter by chapter
+if (sheet) tile(files, 5, path.resolve("out/contact-sheet.png"), 384, 216);
 
 /** Lay stills out in a grid with xstack (explicit layout, every input placed). */
-function tile(inputs: string[], cols: number, out: string) {
-  const w = 960;
-  const h = 540;
-  const pad = 6;
+function tile(inputs: string[], cols: number, out: string, w: number, h: number) {
+  const pad = 8;
   const layout = inputs.map((_, i) => `${(i % cols) * (w + pad)}_${Math.floor(i / cols) * (h + pad)}`).join("|");
   execFileSync("ffmpeg", [
     "-y", "-loglevel", "error",
     ...inputs.flatMap((f) => ["-i", f]),
-    "-filter_complex", `${inputs.map((_, i) => `[${i}:v]scale=${w}:${h}[v${i}]`).join(";")};${inputs.map((_, i) => `[v${i}]`).join("")}xstack=inputs=${inputs.length}:layout=${layout}:fill=0x888888`,
+    "-filter_complex", `${inputs.map((_, i) => `[${i}:v]scale=${w}:${h}[v${i}]`).join(";")};${inputs.map((_, i) => `[v${i}]`).join("")}xstack=inputs=${inputs.length}:layout=${layout}:fill=0xE5E0D8`,
     "-frames:v", "1", out,
   ]);
   console.log(`review tile → ${path.relative(process.cwd(), out)}`);
 }
 
-if (sheet) {
-  // 75 bars → a 5×15 grid, chapter by chapter.
-  const list = path.join(outDir, "sheet.txt");
-  fs.writeFileSync(list, files.map((f) => `file '${f}'`).join("\n"));
-  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", list, "-vf", "tile=5x15:padding=8:margin=8:color=0xE5E0D8", "-frames:v", "1", path.resolve("out/contact-sheet.png")]);
-  console.log("contact sheet → out/contact-sheet.png");
-}

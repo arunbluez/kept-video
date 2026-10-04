@@ -106,9 +106,9 @@ const ExpiredPage: React.FC<{ frame: number }> = ({ frame }) => {
 const Lapsed: React.FC<{ frame: number }> = ({ frame }) => {
   const out = prog(frame, T.lapsedOut, ms(900), EASE.camera);
   if (out >= 1) return null;
-  const rise = prog(frame, at(107.75), ms(400));
+  // already in place when whip #3 lands on it
   return (
-    <div style={{ position: "absolute", left: FR.x, top: FR.y + (1 - rise) * 30, opacity: (1 - out) * rise, transform: `scale(${lerp(1, 0.94, out)})` }}>
+    <div style={{ position: "absolute", left: FR.x, top: FR.y, opacity: 1 - out, transform: `scale(${lerp(1, 0.94, out)})` }}>
       <BrowserFrame w={FR.w} pageH={FR.pageH} host={`${LAPSED_SLUG}.${HOST}`}>
         <ExpiredPage frame={frame} />
       </BrowserFrame>

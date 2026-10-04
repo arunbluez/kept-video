@@ -125,7 +125,7 @@ export const CUES: Cue[] = [
   // T4 #2
   { f: at(85.0), sfx: "whoosh", gain: 0.85, dur: beats(2), pan: 0.8 },
   // Act 5 — WALL: one snap per block, on the eighths
-  { f: at(86.5), sfx: "pop", gain: 0.4 },
+  { f: at(86.0), sfx: "pop", gain: 0.4 },
   ...onGrid(87.0, 15, "snap", 0.42, 0.5),
   { f: at(98.0), sfx: "click", gain: 0.5 },
   { f: at(99.0), sfx: "snap", gain: 0.6 },

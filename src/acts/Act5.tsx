@@ -55,7 +55,7 @@ const BLOCKS: Block[] = [
 ];
 
 const T = {
-  header: at(86.5),
+  header: at(86.0),
   firstLand: at(87.0),
   flyFrom: at(94.0),
   flyTo: at(98.0),

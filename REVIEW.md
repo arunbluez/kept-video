@@ -94,7 +94,10 @@ reveal fighting the exiting super; the dragged card hiding *Release to keep it*;
 the address bar arriving empty mid-morph; the agent chat's pill indent (now
 measured); chat and claim screen ghosting through each other; the toast
 wrapping; Explore's header colliding with an exiting super; the rail cluttering
-the share kit; the wall super sitting on blocks during the flyover. The
+the share kit; the wall super sitting on blocks during the flyover. Frames pulled
+from the first full render then showed two whips landing on near-empty canvas,
+so Mira's header is up as whip #2 lands (1:26.0) and the lapsed draft is already
+in place when whip #3 lands (1:48.0). The
 contact sheet (`out/contact-sheet.png`, one still per bar) is the overview.
 
 ## 8. Technical notes
@@ -105,6 +108,11 @@ contact sheet (`out/contact-sheet.png`, one still per bar) is the overview.
 - Renders use the environment's pre-installed `chrome-headless-shell`
   (`remotion.config.ts`); set `REMOTION_BROWSER_EXECUTABLE` elsewhere, or unset
   both to let Remotion download its own.
+- Encode: PNG frames → H.264 CRF 16, `yuv420p`, TV range, tagged BT.709 (JPEG
+  frames had landed the first render in full-range `yuvj420p`, which some
+  players show with shifted contrast). Audio AAC 320k, 48 kHz, loudness-normalised
+  to −14 LUFS with a −1.5 dBTP ceiling going into the encoder (the first render's
+  −1 dBTP ceiling came out at −0.7 after AAC).
 - Everything is deterministic: seeded PRNG for every jitter, typing rhythm, slug,
   glyph and grain.
 

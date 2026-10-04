@@ -4,12 +4,14 @@ import { webpackOverride } from "./webpack-override";
 
 Config.overrideWebpackConfig(webpackOverride);
 
-Config.setVideoImageFormat("jpeg");
-Config.setJpegQuality(95);
+// PNG frames: exact colour on flat fills and type (JPEG frames ring, and land
+// the encode in full-range yuvj420p)
+Config.setVideoImageFormat("png");
 Config.setConcurrency(4);
 Config.setCodec("h264");
 Config.setCrf(16);
 Config.setPixelFormat("yuv420p");
+Config.setColorSpace("bt709");
 Config.setAudioCodec("aac");
 Config.setAudioBitrate("320k");
 Config.setChromiumOpenGlRenderer("angle");

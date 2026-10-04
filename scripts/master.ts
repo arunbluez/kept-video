@@ -1,6 +1,6 @@
 /**
  * Master the render's audio: two-pass EBU R128 loudness normalisation to
- * −14 LUFS integrated, −1 dBTP — the usual target for web video — with the
+ * −14 LUFS integrated, ≤ −1 dBTP — the usual target for web video — with the
  * picture stream copied untouched.
  *
  *   tsx scripts/master.ts out/kept-launch-film.raw.mp4 out/kept-launch-film.mp4
@@ -10,7 +10,8 @@ import { execFileSync, spawnSync } from "node:child_process";
 const [input, output] = process.argv.slice(2);
 if (!input || !output) throw new Error("usage: master.ts <in.mp4> <out.mp4>");
 
-const TARGET = "I=-14:TP=-1:LRA=11";
+// −1.5 dBTP into the encoder leaves room for AAC's inter-sample overshoot
+const TARGET = "I=-14:TP=-1.5:LRA=11";
 // pass 1: measure (ffmpeg prints the loudnorm report on stderr)
 const { stderr } = spawnSync("ffmpeg", ["-hide_banner", "-i", input, "-af", `loudnorm=${TARGET}:print_format=json`, "-f", "null", "-"], {
   encoding: "utf8",
