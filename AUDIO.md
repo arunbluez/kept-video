@@ -15,8 +15,9 @@ lands on the picture. A library track can't. ElevenLabs says Eleven Music is
 [music terms](https://elevenlabs.io/music-terms) before you publish.
 
 **Paste-ready prompts for the ElevenLabs web app, for both cuts and the VO,
-are in [`elevenlabs/prompts.md`](elevenlabs/prompts.md).** The same structure
-as API composition plans, one per cut: Each section starts on a bar line and lands on a visual hit:
+are in [`elevenlabs/prompts.md`](elevenlabs/prompts.md).** The JSON files below
+hold the same structure as API composition plans, one per cut. Each section
+starts on a bar line and lands on a visual hit:
 
 | File | Cut | Sections (start) |
 |---|---|---|
